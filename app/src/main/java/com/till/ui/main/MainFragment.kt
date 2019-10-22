@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
+import android.provider.ContactsContract.PhoneLookup
+import android.provider.Telephony
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +16,14 @@ import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
 import timber.log.Timber
 
-class MainFragment : Fragment() {
+enum class RequestCodes(val code: Int) {
+    PERMISSIONS_RC_SMS_CONTACT(100)
+}
+
+class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
+
+    var numbers: Set<String> = emptySet()
+    var names: Set<String> = emptySet()
 
     companion object {
         fun newInstance() = MainFragment()
@@ -28,13 +37,19 @@ class MainFragment : Fragment() {
     ): View {
 
         // Check permissions for SMS
-        if (EasyPermissions.hasPermissions(context!!, Manifest.permission.READ_SMS)) {
-            getSmsMessages()
+        if (EasyPermissions.hasPermissions(
+                context!!,
+                Manifest.permission.READ_SMS,
+                Manifest.permission.READ_CONTACTS
+            )
+        ) {
+            scrape()
         } else {
             EasyPermissions.requestPermissions(
                 PermissionRequest.Builder(
-                    this, 101,
-                    Manifest.permission.READ_SMS
+                    this, RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code,
+                    Manifest.permission.READ_SMS,
+                    Manifest.permission.READ_CONTACTS
                 ).build()
             )
         }
@@ -48,37 +63,105 @@ class MainFragment : Fragment() {
         // TODO: Use the ViewModel
     }
 
-    fun getSmsMessages() {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
+    }
+
+    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
+        when (requestCode) {
+            RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code -> {
+                scrape()
+            }
+        }
+    }
+
+    private fun scrape() {
+        Timber.i("Scraping started...")
+
+        getSmsMessages()
+
+        Timber.i("Scraped ${numbers.size} numbers from sms messages...")
+        Timber.i("Matching names to numbers...")
+
+        getContactsNames()
+
+        Timber.i("Matched ${names.size} names...")
+    }
+
+    private fun getSmsMessages() {
         // public static final String INBOX = "content://sms/inbox";
         // public static final String SENT = "content://sms/sent";
         // public static final String DRAFT = "content://sms/draft";
         val cursor = (activity as Activity).contentResolver.query(
             Uri.parse("content://sms/inbox"),
-            null,
+            Array(1) { Telephony.Sms.ADDRESS },
             null,
             null,
             null
         )
 
-        var numbers: Set<String> = emptySet()
-
-        if (cursor != null) {
-            if (cursor.moveToFirst()) { // must check the result to prevent exception
-                do {
-                    numbers =
-                        numbers.plus(cursor.getString(cursor.getColumnIndexOrThrow("address")))
-                    var msgData = ""
-                    for (i in 0 until cursor.columnCount) {
-                        msgData += " " + cursor.getColumnName(i) + ":" + cursor.getString(i)
-                    }
-                    Timber.i(msgData)
-                    // use msgData
-                } while (cursor.moveToNext())
+        // Some providers return null if an error occurs, others throw an exception
+        when (cursor?.count) {
+            null -> {
+                Timber.e("Error fetching sms messages from provider")
             }
+            0 -> {
+                Timber.i("Sms message query failed. Try again.")
+            }
+            else -> {
+                cursor.apply {
+                    val index: Int = getColumnIndexOrThrow(Telephony.Sms.ADDRESS)
+                    /*
+                     * Moves to the next row in the cursor. Before the first movement in the
+                     * cursor, the "row pointer" is -1, and if you try to retrieve data at that
+                     * position you will get an exception.
+                     */
+                    moveToFirst()
 
-            cursor.close()
+                    do {
+                        numbers = numbers.plus(getString(index))
+                    } while (moveToNext())
+                }
+                cursor.close()
+            }
         }
 
         Timber.i(numbers.toString())
+    }
+
+    private fun getContactsNames() {
+        numbers.forEach {
+            val uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(it))
+            val cursor = (activity as Activity).contentResolver.query(
+                uri, null, null, null, null
+            )
+
+            when (cursor?.count) {
+                null -> {
+                    Timber.e("Error fetching contact info for number $it")
+                }
+                0 -> {
+                    Timber.i("Unable to find contact for number $it.")
+                }
+                else -> {
+                    cursor.apply {
+                        val index: Int = getColumnIndexOrThrow(PhoneLookup.DISPLAY_NAME)
+                        moveToFirst()
+                        names = names.plus(getString(index))
+                    }
+                }
+            }
+            cursor?.close()
+        }
     }
 }
