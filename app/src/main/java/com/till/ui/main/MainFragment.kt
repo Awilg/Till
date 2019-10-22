@@ -1,9 +1,10 @@
 package com.till.ui.main
 
 import android.Manifest
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
+import android.provider.CallLog
 import android.provider.ContactsContract.PhoneLookup
 import android.provider.Telephony
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.till.R
+import com.till.contentResolver
 import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
 import timber.log.Timber
@@ -24,6 +26,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
     var numbers: Set<String> = emptySet()
     var names: Set<String> = emptySet()
+    var calls: Set<String> = emptySet()
 
     companion object {
         fun newInstance() = MainFragment()
@@ -40,7 +43,8 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         if (EasyPermissions.hasPermissions(
                 context!!,
                 Manifest.permission.READ_SMS,
-                Manifest.permission.READ_CONTACTS
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.READ_CALL_LOG
             )
         ) {
             scrape()
@@ -49,7 +53,8 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                 PermissionRequest.Builder(
                     this, RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code,
                     Manifest.permission.READ_SMS,
-                    Manifest.permission.READ_CONTACTS
+                    Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.READ_CALL_LOG
                 ).build()
             )
         }
@@ -96,14 +101,16 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         getContactsNames()
 
         Timber.i("Matched ${names.size} names...")
+        Timber.i("Getting call logs...")
+        getCallLogs()
     }
 
     private fun getSmsMessages() {
         // public static final String INBOX = "content://sms/inbox";
         // public static final String SENT = "content://sms/sent";
         // public static final String DRAFT = "content://sms/draft";
-        val cursor = (activity as Activity).contentResolver.query(
-            Uri.parse("content://sms/inbox"),
+        val cursor = contentResolver().query(
+            Telephony.Sms.CONTENT_URI,
             Array(1) { Telephony.Sms.ADDRESS },
             null,
             null,
@@ -139,11 +146,57 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         Timber.i(numbers.toString())
     }
 
+    @SuppressLint("MissingPermission")
+    private fun getCallLogs() {
+        // public static final String INBOX = "content://sms/inbox";
+        // public static final String SENT = "content://sms/sent";
+        // public static final String DRAFT = "content://sms/draft";
+        val cursor = contentResolver().query(
+            CallLog.Calls.CONTENT_URI,
+            Array(1) { CallLog.Calls.CACHED_NAME },
+            null,
+            null,
+            null
+        )
+
+        // Some providers return null if an error occurs, others throw an exception
+        when (cursor?.count) {
+            null -> {
+                Timber.e("Error fetching sms messages from provider")
+            }
+            0 -> {
+                Timber.i("Sms message query failed. Try again.")
+            }
+            else -> {
+                cursor.apply {
+                    val index: Int = getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)
+                    /*
+                     * Moves to the next row in the cursor. Before the first movement in the
+                     * cursor, the "row pointer" is -1, and if you try to retrieve data at that
+                     * position you will get an exception.
+                     */
+                    moveToFirst()
+
+                    do {
+                        calls = calls.plus(getString(index))
+                    } while (moveToNext())
+                }
+                cursor.close()
+            }
+        }
+
+        Timber.i("Calls:  ${calls.toString()}")
+    }
+
     private fun getContactsNames() {
         numbers.forEach {
             val uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(it))
-            val cursor = (activity as Activity).contentResolver.query(
-                uri, null, null, null, null
+            val cursor = contentResolver().query(
+                uri,
+                Array(1) { PhoneLookup.DISPLAY_NAME },
+                null,
+                null,
+                null
             )
 
             when (cursor?.count) {
