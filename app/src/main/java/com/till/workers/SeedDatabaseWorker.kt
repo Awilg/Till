@@ -11,6 +11,7 @@ import androidx.work.WorkerParameters
 import com.till.data.AppDatabase
 import com.till.data.Connection
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class SeedDatabaseWorker(
@@ -39,19 +40,23 @@ class SeedDatabaseWorker(
 		}
 	}
 
-	private fun scrape() {
+	private suspend fun scrape() = coroutineScope {
 		Timber.i("Scraping started...")
 
-		getSmsMessages()
+		coroutineScope {
+			launch {
+				Timber.i("Getting sms numbers...")
+				getSmsMessages()
+				Timber.i("Scraped ${numbers.size} numbers from sms messages...")
+			}
 
-		Timber.i("Scraped ${numbers.size} numbers from sms messages...")
-		Timber.i("Matching names to numbers...")
+			launch {
+				Timber.i("Getting call logs...")
+				getCallLogs()
+			}
+		}
 
 		getContactsNames()
-
-		Timber.i("Matched ${names.size} names...")
-		Timber.i("Getting call logs...")
-		getCallLogs()
 	}
 
 	private fun getSmsMessages() {
@@ -99,7 +104,7 @@ class SeedDatabaseWorker(
 	private fun getCallLogs() {
 		val cursor = applicationContext.contentResolver.query(
 			CallLog.Calls.CONTENT_URI,
-			Array(1) { CallLog.Calls.CACHED_NAME },
+			Array(1) { CallLog.Calls.NUMBER },
 			null,
 			null,
 			null
@@ -115,7 +120,7 @@ class SeedDatabaseWorker(
 			}
 			else -> {
 				cursor.apply {
-					val index: Int = getColumnIndex(CallLog.Calls.CACHED_NAME)
+					val index: Int = getColumnIndex(CallLog.Calls.NUMBER)
 
 					moveToFirst()
 
@@ -146,13 +151,12 @@ class SeedDatabaseWorker(
 					Timber.e("Error fetching contact info for number $it")
 				}
 				0 -> {
-					Timber.i("Unable to find contact for number $it.")
+					//Timber.i("Unable to find contact for number $it.")
 				}
 				else -> {
 					cursor.apply {
 						val nameIndex: Int = getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME)
 						moveToFirst()
-						names = names.plus(getString(nameIndex))
 						conns = conns.plus(Connection(name = getString(nameIndex), number = it))
 					}
 				}
