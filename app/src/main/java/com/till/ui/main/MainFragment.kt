@@ -1,12 +1,7 @@
 package com.till.ui.main
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.net.Uri
 import android.os.Bundle
-import android.provider.CallLog
-import android.provider.ContactsContract.PhoneLookup
-import android.provider.Telephony
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,11 +9,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.till.R
-import com.till.contentResolver
 import com.till.util.InjectorUtils
 import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
-import timber.log.Timber
 
 enum class RequestCodes(val code: Int) {
     PERMISSIONS_RC_SMS_CONTACT(100)
@@ -52,7 +45,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
             )
         ) {
             Toast.makeText(context, "Toastin'", Toast.LENGTH_SHORT).show()
-            viewModel.addConnection()
+            viewModel.getConnections()
         } else {
             EasyPermissions.requestPermissions(
                 PermissionRequest.Builder(
@@ -85,7 +78,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         when (requestCode) {
             RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code -> {
                 Toast.makeText(context, "Toastin'", Toast.LENGTH_SHORT).show()
-                viewModel.addConnection()
+                viewModel.getConnections()
             }
         }
     }
