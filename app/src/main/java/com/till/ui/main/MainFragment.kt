@@ -10,10 +10,12 @@ import android.provider.Telephony
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.fragment.app.viewModels
 import com.till.R
 import com.till.contentResolver
+import com.till.util.InjectorUtils
 import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
 import timber.log.Timber
@@ -24,15 +26,17 @@ enum class RequestCodes(val code: Int) {
 
 class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
-    var numbers: Set<String> = emptySet()
-    var names: Set<String> = emptySet()
-    var calls: Set<String> = emptySet()
-
     companion object {
         fun newInstance() = MainFragment()
     }
 
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModels {
+        InjectorUtils.provideMainViewModelFactory(requireContext())
+    }
+
+    var numbers: Set<String> = emptySet()
+    var names: Set<String> = emptySet()
+    var calls: Set<String> = emptySet()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,7 +51,8 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                 Manifest.permission.READ_CALL_LOG
             )
         ) {
-            scrape()
+            Toast.makeText(context, "Toastin'", Toast.LENGTH_SHORT).show()
+            viewModel.addConnection()
         } else {
             EasyPermissions.requestPermissions(
                 PermissionRequest.Builder(
@@ -60,12 +65,6 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         }
 
         return inflater.inflate(R.layout.main_fragment, container, false)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        // TODO: Use the ViewModel
     }
 
     override fun onRequestPermissionsResult(
@@ -85,136 +84,9 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         when (requestCode) {
             RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code -> {
-                scrape()
+                Toast.makeText(context, "Toastin'", Toast.LENGTH_SHORT).show()
+                viewModel.addConnection()
             }
-        }
-    }
-
-    private fun scrape() {
-        Timber.i("Scraping started...")
-
-        getSmsMessages()
-
-        Timber.i("Scraped ${numbers.size} numbers from sms messages...")
-        Timber.i("Matching names to numbers...")
-
-        getContactsNames()
-
-        Timber.i("Matched ${names.size} names...")
-        Timber.i("Getting call logs...")
-        getCallLogs()
-    }
-
-    private fun getSmsMessages() {
-        // public static final String INBOX = "content://sms/inbox";
-        // public static final String SENT = "content://sms/sent";
-        // public static final String DRAFT = "content://sms/draft";
-        val cursor = contentResolver().query(
-            Telephony.Sms.CONTENT_URI,
-            Array(1) { Telephony.Sms.ADDRESS },
-            null,
-            null,
-            null
-        )
-
-        // Some providers return null if an error occurs, others throw an exception
-        when (cursor?.count) {
-            null -> {
-                Timber.e("Error fetching sms messages from provider")
-            }
-            0 -> {
-                Timber.i("Sms message query failed. Try again.")
-            }
-            else -> {
-                cursor.apply {
-                    val index: Int = getColumnIndexOrThrow(Telephony.Sms.ADDRESS)
-                    /*
-                     * Moves to the next row in the cursor. Before the first movement in the
-                     * cursor, the "row pointer" is -1, and if you try to retrieve data at that
-                     * position you will get an exception.
-                     */
-                    moveToFirst()
-
-                    do {
-                        numbers = numbers.plus(getString(index))
-                    } while (moveToNext())
-                }
-                cursor.close()
-            }
-        }
-
-        Timber.i(numbers.toString())
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun getCallLogs() {
-        // public static final String INBOX = "content://sms/inbox";
-        // public static final String SENT = "content://sms/sent";
-        // public static final String DRAFT = "content://sms/draft";
-        val cursor = contentResolver().query(
-            CallLog.Calls.CONTENT_URI,
-            Array(1) { CallLog.Calls.CACHED_NAME },
-            null,
-            null,
-            null
-        )
-
-        // Some providers return null if an error occurs, others throw an exception
-        when (cursor?.count) {
-            null -> {
-                Timber.e("Error fetching sms messages from provider")
-            }
-            0 -> {
-                Timber.i("Sms message query failed. Try again.")
-            }
-            else -> {
-                cursor.apply {
-                    val index: Int = getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)
-                    /*
-                     * Moves to the next row in the cursor. Before the first movement in the
-                     * cursor, the "row pointer" is -1, and if you try to retrieve data at that
-                     * position you will get an exception.
-                     */
-                    moveToFirst()
-
-                    do {
-                        calls = calls.plus(getString(index))
-                    } while (moveToNext())
-                }
-                cursor.close()
-            }
-        }
-
-        Timber.i("Calls:  ${calls.toString()}")
-    }
-
-    private fun getContactsNames() {
-        numbers.forEach {
-            val uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(it))
-            val cursor = contentResolver().query(
-                uri,
-                Array(1) { PhoneLookup.DISPLAY_NAME },
-                null,
-                null,
-                null
-            )
-
-            when (cursor?.count) {
-                null -> {
-                    Timber.e("Error fetching contact info for number $it")
-                }
-                0 -> {
-                    Timber.i("Unable to find contact for number $it.")
-                }
-                else -> {
-                    cursor.apply {
-                        val index: Int = getColumnIndexOrThrow(PhoneLookup.DISPLAY_NAME)
-                        moveToFirst()
-                        names = names.plus(getString(index))
-                    }
-                }
-            }
-            cursor?.close()
         }
     }
 }

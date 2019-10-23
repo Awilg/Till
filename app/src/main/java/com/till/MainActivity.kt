@@ -2,6 +2,7 @@ package com.till
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.till.data.AppDatabase
 import com.till.ui.main.MainFragment
 import timber.log.Timber
 
