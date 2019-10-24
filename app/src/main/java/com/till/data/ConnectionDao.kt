@@ -11,8 +11,8 @@ interface ConnectionDao {
 	@Query("SELECT * FROM connections ORDER BY name")
 	fun getConnections(): LiveData<List<Connection>>
 
-	@Query("SELECT * FROM connections WHERE id = :connectionId")
-	fun getConnection(connectionId: Int): LiveData<Connection>
+	@Query("SELECT * FROM connections WHERE number = :number")
+	fun getConnection(number: String): LiveData<Connection>
 
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	suspend fun insertAll(connections: List<Connection>)

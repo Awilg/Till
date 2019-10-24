@@ -1,19 +1,18 @@
 package com.till.data
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Calendar
+import java.util.*
 import java.util.Calendar.DAY_OF_YEAR
 
 @Entity(tableName = "connections")
 data class Connection(
-	@PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val connectionId: Int = 0,
-	val name: String,
-	val number: String,
-	val description: String = "",
-	val contactInterval: Int = 30, // how often the person should be contacted
-	val imageUrl: String = ""
+    val name: String,
+    @PrimaryKey val number: String,
+    val description: String = "",
+    val lastContact: String,
+    val contactInterval: Int = 30, // how often the person should be contacted
+    val imageUrl: String = ""
 ) {
 
 	/**

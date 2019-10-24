@@ -2,10 +2,8 @@ package com.till.ui.main
 
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.till.data.Connection
 import com.till.data.ConnectionRepository
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class MainViewModel internal constructor(
@@ -19,9 +17,4 @@ class MainViewModel internal constructor(
     }
 
     fun getConnections() = connectionRepository.getConnections()
-
-    fun addConnection() =
-        viewModelScope.launch {
-            connectionRepository.addConnection(Connection(name = "testName", number = "testNumber"))
-        }
 }
