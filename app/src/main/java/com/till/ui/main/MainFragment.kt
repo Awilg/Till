@@ -1,6 +1,7 @@
 package com.till.ui.main
 
 import android.Manifest
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.till.R
+import com.till.notif.NotificationHelper
 import com.till.util.InjectorUtils
 import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
@@ -46,6 +48,25 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         ) {
             Toast.makeText(context, "Toastin'", Toast.LENGTH_SHORT).show()
             viewModel.getConnections()
+
+            context?.let {
+                NotificationHelper.createNotificationChannel(
+                    context as Context,
+                    4, // HIGH
+                    false,
+                    "Test Channel",
+                    "This is a test channel description!"
+                )
+
+                val builder = NotificationHelper.createSampleDataNotification(
+                    context as Context,
+                    "This is a title",
+                    "This is a message POG",
+                    "This is BIG TEXT"
+                )
+
+                NotificationHelper.showNotification(context as Context, builder)
+            }
         } else {
             EasyPermissions.requestPermissions(
                 PermissionRequest.Builder(
