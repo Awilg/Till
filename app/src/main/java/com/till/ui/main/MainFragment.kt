@@ -1,7 +1,8 @@
 package com.till.ui.main
 
 import android.Manifest
-import android.content.Context
+import android.app.PendingIntent
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.till.MainActivity
 import com.till.R
 import com.till.notif.NotificationHelper
 import com.till.util.InjectorUtils
@@ -50,8 +52,15 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
             viewModel.getConnections()
 
             context?.let {
+                // Create an explicit intent for an Activity in your app
+                val intent = Intent(it, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                val pendingIntent: PendingIntent = PendingIntent.getActivity(it, 0, intent, 0)
+
+
                 NotificationHelper.createNotificationChannel(
-                    context as Context,
+                    it,
                     4, // HIGH
                     false,
                     "Test Channel",
@@ -59,13 +68,14 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                 )
 
                 val builder = NotificationHelper.createSampleDataNotification(
-                    context as Context,
+                    it,
                     "This is a title",
                     "This is a message POG",
-                    "This is BIG TEXT"
+                    "This is BIG TEXT",
+                    pendingIntent = pendingIntent
                 )
 
-                NotificationHelper.showNotification(context as Context, builder)
+                NotificationHelper.showNotification(it, builder)
             }
         } else {
             EasyPermissions.requestPermissions(
