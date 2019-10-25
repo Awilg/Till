@@ -44,7 +44,8 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                 context!!,
                 Manifest.permission.READ_SMS,
                 Manifest.permission.READ_CONTACTS,
-                Manifest.permission.READ_CALL_LOG
+                Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.CALL_PHONE
             )
         ) {
             Toast.makeText(context, "Toastin'", Toast.LENGTH_SHORT).show()
@@ -75,7 +76,13 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
                 val smsIntent = Intent(Intent.ACTION_SENDTO).apply {
                     data =
-                        Uri.parse("smsto:" + getString(R.string.default_sms_num))  // This ensures only SMS apps respond
+                        Uri.parse("smsto:" + getString(R.string.default_phone_num))  // This ensures only SMS apps respond
+                    putExtra("sms_body", getString(R.string.sms_template_omg))
+                }
+
+                val callIntent = Intent(Intent.ACTION_DIAL).apply {
+                    data =
+                        Uri.parse("tel:" + getString(R.string.ryan_phone_num))  // This ensures only SMS apps respond
                     putExtra("sms_body", getString(R.string.sms_template_omg))
                 }
 
@@ -92,12 +99,24 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                         PendingIntent.FLAG_CANCEL_CURRENT
                     )
 
+                val callPendingIntent: PendingIntent =
+                    PendingIntent.getActivity(
+                        context,
+                        0,
+                        callIntent,
+                        PendingIntent.FLAG_CANCEL_CURRENT
+                    )
+
                 if (isIntentSafe) {
                     builder.addAction(
-                        R.drawable.ic_launcher_foreground, getString(R.string.contact),
+                        R.drawable.ic_launcher_foreground, getString(R.string.text),
                         smsPendingIntent
                     )
                 }
+                builder.addAction(
+                    R.drawable.ic_launcher_foreground, getString(R.string.call),
+                    callPendingIntent
+                )
 
                 NotificationHelper.showNotification(it, builder)
             }
@@ -107,7 +126,8 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                     this, RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code,
                     Manifest.permission.READ_SMS,
                     Manifest.permission.READ_CONTACTS,
-                    Manifest.permission.READ_CALL_LOG
+                    Manifest.permission.READ_CALL_LOG,
+                    Manifest.permission.CALL_PHONE
                 ).build()
             )
         }

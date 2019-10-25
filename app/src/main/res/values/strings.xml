@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">Till</string>
     <string name="contact">Contact</string>
-    <string name="default_sms_num">5165928722</string>
+    <string name="text">Text</string>
+    <string name="call">Call</string>
+    <string name="default_phone_num">TODO</string>
+    <string name="ryan_phone_num">TODO</string>
     <string name="reach_out_to">Reach out to</string>
     <string name="chooser_title">Select which app to use</string>
     <string name="sms_template_omg">OMG! It\'s been soooo long… we should tooootally hang out sometime!</string>
