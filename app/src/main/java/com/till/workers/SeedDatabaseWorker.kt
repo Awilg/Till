@@ -11,6 +11,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.till.data.AppDatabase
 import com.till.data.Connection
+import com.till.util.mergeReduceInPlace
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -20,42 +21,16 @@ class SeedDatabaseWorker(
     context: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
-    private var smsNumbers: MutableSet<Contact> = mutableSetOf()
-    private var callLogNumbers: MutableSet<Contact> = mutableSetOf()
-    private var allNumbers: Set<Contact> = mutableSetOf()
+    private var smsMap: MutableMap<String, String> = mutableMapOf()
+    private var numMap: MutableMap<String, String> = mutableMapOf()
 
     var conns: MutableList<Connection> = mutableListOf()
-
-    class Contact(val number: String, val contactDate: String) {
-
-        override fun toString(): String {
-            return "Contact(number='$number', contactDate=$contactDate)"
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as Contact
-
-            if (number != other.number) return false
-            if (contactDate != other.contactDate) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = number.hashCode()
-            result = 31 * result + contactDate.hashCode()
-            return result
-        }
-    }
 
     override suspend fun doWork(): Result = coroutineScope {
         try {
             scrape()
 
-            Timber.i("Connections made - size ${conns.size}")
+            Timber.d("Connections made - size ${conns.size}")
 
             val database = AppDatabase.getInstance(applicationContext)
             database.connectionDao().insertAll(conns)
@@ -72,21 +47,24 @@ class SeedDatabaseWorker(
 
         coroutineScope {
             launch {
-                Timber.i("Getting sms numbers...")
+                Timber.d("Getting sms numbers...")
                 getSmsMessages()
-                Timber.i("Scraped ${smsNumbers.size} numbers from sms messages...")
+                Timber.d("Scraped ${smsMap.size} numbers from sms messages...")
             }
 
             launch {
-                Timber.i("Getting call logs...")
+                Timber.d("Getting call logs...")
                 getCallLogs()
-                Timber.i("Scraped ${callLogNumbers.size} numbers from call logs...")
+                Timber.d("Scraped ${numMap.size} numbers from call logs...")
             }
         }
 
-        // TODO: custom compare merge to take the most recent timestamp one
-        allNumbers = smsNumbers.union(callLogNumbers)
-        Timber.i("Getting contact names for ${allNumbers.size} numbers...")
+        Timber.d("Merging the lists...")
+
+        // Take the most recent from the two maps
+        numMap.mergeReduceInPlace(smsMap) { u, v -> if (u.toBigInteger() > v.toBigInteger()) u else v }
+
+        Timber.d("Getting contact names for ${numMap.size} numbers...")
         getContactsNames()
     }
 
@@ -100,13 +78,12 @@ class SeedDatabaseWorker(
             "${Telephony.Sms.DATE} DESC"
         )
 
-        // Some providers return null if an error occurs, others throw an exception
         when (cursor?.count) {
             null -> {
                 Timber.e("Error fetching sms messages from provider")
             }
             0 -> {
-                Timber.i("Sms message query failed. Try again.")
+                Timber.d("Sms message query failed. Try again.")
             }
             else -> {
                 cursor.apply {
@@ -133,7 +110,8 @@ class SeedDatabaseWorker(
                         )
 
                         if (number != null) {
-                            smsNumbers.add(Contact(number, getString(dateIndex)))
+                            val date = getString(dateIndex)
+                            smsMap.putIfAbsent(number, date)
                         }
                     } while (moveToNext())
                 }
@@ -144,22 +122,20 @@ class SeedDatabaseWorker(
 
     @SuppressLint("MissingPermission")
     private fun getCallLogs() {
-        val seenNumbers: MutableSet<String> = mutableSetOf()
         val cursor = applicationContext.contentResolver.query(
             CallLog.Calls.CONTENT_URI,
             arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DATE),
             null,
             null,
-            null
+            "${CallLog.Calls.DATE} DESC"
         )
 
-        // Some providers return null if an error occurs, others throw an exception
         when (cursor?.count) {
             null -> {
                 Timber.e("Error fetching sms messages from provider")
             }
             0 -> {
-                Timber.i("Sms message query failed. Try again.")
+                Timber.d("Sms message query failed. Try again.")
             }
             else -> {
                 cursor.apply {
@@ -175,10 +151,8 @@ class SeedDatabaseWorker(
                                 Locale.US.country
                             )
 
-                            if (!seenNumbers.contains(number)) {
-                                callLogNumbers.add(Contact(number, getString(dateIndex)))
-                                seenNumbers.add(number)
-                            }
+                            numMap.putIfAbsent(number, getString(dateIndex))
+
                         }
                     } while (moveToNext())
                 }
@@ -188,10 +162,10 @@ class SeedDatabaseWorker(
     }
 
     private fun getContactsNames() {
-        allNumbers.forEach {
+        numMap.forEach {
             val uri = Uri.withAppendedPath(
                 ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
-                Uri.encode(it.number)
+                Uri.encode(it.key)
             )
             val cursor = applicationContext.contentResolver.query(
                 uri,
@@ -206,7 +180,7 @@ class SeedDatabaseWorker(
                     Timber.e("Error fetching contact info for number $it")
                 }
                 0 -> {
-                    //Timber.d("Unable to find contact for number $it.")
+                    Timber.v("Unable to find contact for number $it.")
                 }
                 else -> {
                     cursor.apply {
@@ -217,8 +191,8 @@ class SeedDatabaseWorker(
                             conns.add(
                                 Connection(
                                     name = getString(nameIndex),
-                                    number = it.number,
-                                    lastContact = it.contactDate
+                                    number = it.key,
+                                    lastContact = it.value
                                 )
                             )
                         }
