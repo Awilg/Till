@@ -71,7 +71,8 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                     "This is a title",
                     "This is a message POG",
                     "This is BIG TEXT",
-                    pendingIntent = pendingIntent
+                    pendingIntent = pendingIntent,
+                    autoCancel = true
                 )
 
                 val smsIntent = Intent(Intent.ACTION_SENDTO).apply {
