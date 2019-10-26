@@ -8,5 +8,7 @@
     <string name="reach_out_to">Reach out to</string>
     <string name="chooser_title">Select which app to use</string>
     <string name="sms_template_omg">OMG! It\'s been soooo long… we should tooootally hang out sometime!</string>
+    <string name="testing">TESTING!</string>
+    <string name="connection_photo">connection photo</string>
 
 </resources>
