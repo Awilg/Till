@@ -9,10 +9,12 @@ import java.util.Calendar.DAY_OF_YEAR
 data class Connection(
     val name: String,
     @PrimaryKey val number: String,
-    val description: String = "",
     val lastContact: String,
-    val contactInterval: Int = 30, // how often the person should be contacted
-    val imageUrl: String = ""
+    val contactId: String,
+    val contactPhotoUri: String?,
+    val contactThumbnailUri: String?,
+    val description: String? = "",
+    val contactInterval: Int = 30 // how often the person should be contacted
 ) {
 
 	/**
@@ -21,6 +23,4 @@ data class Connection(
 	 */
 	fun contactRequired(since: Calendar, lastContactDate: Calendar) =
 		since > lastContactDate.apply { add(DAY_OF_YEAR, contactInterval) }
-
-	override fun toString() = name
 }

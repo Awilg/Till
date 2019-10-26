@@ -169,7 +169,12 @@ class SeedDatabaseWorker(
             )
             val cursor = applicationContext.contentResolver.query(
                 uri,
-                Array(1) { ContactsContract.PhoneLookup.DISPLAY_NAME },
+                arrayOf(
+                    ContactsContract.PhoneLookup.DISPLAY_NAME,
+                    ContactsContract.PhoneLookup.CONTACT_ID,
+                    ContactsContract.PhoneLookup.PHOTO_URI,
+                    ContactsContract.PhoneLookup.PHOTO_THUMBNAIL_URI
+                ),
                 null,
                 null,
                 null
@@ -186,13 +191,23 @@ class SeedDatabaseWorker(
                     cursor.apply {
                         val nameIndex: Int =
                             getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME)
+                        val contactIndex: Int =
+                            getColumnIndexOrThrow(ContactsContract.PhoneLookup.CONTACT_ID)
+                        val photoIndex: Int =
+                            getColumnIndexOrThrow(ContactsContract.PhoneLookup.PHOTO_URI)
+                        val thumbnailUri: Int =
+                            getColumnIndexOrThrow(ContactsContract.PhoneLookup.PHOTO_THUMBNAIL_URI)
+
                         moveToFirst()
                         if (getString(nameIndex) != "") {
                             conns.add(
                                 Connection(
                                     name = getString(nameIndex),
                                     number = it.key,
-                                    lastContact = it.value
+                                    lastContact = it.value,
+                                    contactId = getString(contactIndex),
+                                    contactPhotoUri = getString(photoIndex),
+                                    contactThumbnailUri = getString(thumbnailUri)
                                 )
                             )
                         }
