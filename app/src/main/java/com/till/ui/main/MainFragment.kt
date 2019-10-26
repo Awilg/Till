@@ -45,7 +45,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         val binding = MainFragmentBinding.inflate(inflater)
 
         val adapter = ConnectionAdapter()
-        binding.plantList.adapter = adapter
+        binding.connectionList.adapter = adapter
         subscribeUi(adapter)
 
         // Check permissions for SMS

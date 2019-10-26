@@ -15,11 +15,12 @@
 
     <com.google.android.material.card.MaterialCardView
         style="@style/Widget.MaterialComponents.CardView"
-        android:layout_width="344dp"
+        android:layout_width="match_parent"
         android:layout_height="310dp"
-        android:layout_marginLeft="@dimen/mtrl_card_spacing"
-        android:layout_marginTop="@dimen/mtrl_card_spacing"
-        android:layout_marginRight="@dimen/mtrl_card_spacing"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginRight="24dp"
         android:onClick="@{clickListener}">
 
         <LinearLayout
@@ -31,6 +32,7 @@
                 android:id="@+id/imageView"
                 android:layout_width="344dp"
                 android:layout_height="194dp"
+                android:src="@drawable/ic_launcher_foreground"
                 android:contentDescription="@string/connection_photo"
                 tools:srcCompat="@tools:sample/avatars" />
 
