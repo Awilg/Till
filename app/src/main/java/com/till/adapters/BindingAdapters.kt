@@ -11,7 +11,8 @@ var format = SimpleDateFormat("MM/dd/yyyy", Locale.US)
 
 @BindingAdapter("formatTimestamp")
 fun formatTimestamp(view: TextView, timestamp: String) {
-    view.text = format.format(Date(timestamp.toLong()))
+    val string = "Last contact: ${format.format(Date(timestamp.toLong()))}"
+    view.text = string
 }
 
 @BindingAdapter("imageFromUrl")

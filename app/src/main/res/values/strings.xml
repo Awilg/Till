@@ -10,5 +10,8 @@
     <string name="sms_template_omg">OMG! It\'s been soooo long… we should tooootally hang out sometime!</string>
     <string name="testing">TESTING!</string>
     <string name="connection_photo">connection photo</string>
+    <string name="home">Home</string>
+    <string name="filter">Filter</string>
+    <string name="settings">Settings</string>
 
 </resources>

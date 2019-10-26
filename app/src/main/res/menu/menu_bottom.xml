@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/explore"
+        android:icon="@drawable/ic_filter_list_black_24dp"
+        android:state_checked="false"
+        android:title="@string/filter" />
+
+    <item
+        android:id="@+id/home"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:state_checked="false"
+        android:title="@string/home" />
+
+    <item
+        android:id="@+id/more"
+        android:icon="@drawable/ic_settings_black_24dp"
+        android:state_checked="false"
+        android:title="@string/settings" />
+</menu>

@@ -3,12 +3,14 @@ package com.till
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
+import androidx.navigation.findNavController
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.till.notif.NotificationHelper.createNotificationChannel
-import com.till.ui.main.MainFragment
 import timber.log.Timber
 
-class MainActivity : AppCompatActivity() {
 
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
@@ -25,11 +27,13 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.app_name), "App notification channel."
         )
 
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, MainFragment.newInstance())
-                .commitNow()
-        }
+        setUpNavigation()
     }
 
+    private fun setUpNavigation() {
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_nav)
+        val navHostFragment = findNavController(R.id.nav_host_fragment)
+        bottomNavigationView.setupWithNavController(navHostFragment)
+        bottomNavigationView.itemIconTintList = null
+    }
 }
