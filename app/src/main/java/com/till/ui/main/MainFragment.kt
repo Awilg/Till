@@ -13,8 +13,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import com.till.MainActivity
 import com.till.R
+import com.till.adapters.ConnectionAdapter
+import com.till.databinding.MainFragmentBinding
 import com.till.notif.NotificationHelper
 import com.till.util.InjectorUtils
 import pub.devrel.easypermissions.EasyPermissions
@@ -38,6 +41,12 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
+        val binding = MainFragmentBinding.inflate(inflater)
+
+        val adapter = ConnectionAdapter()
+        binding.plantList.adapter = adapter
+        subscribeUi(adapter)
 
         // Check permissions for SMS
         if (EasyPermissions.hasPermissions(
@@ -133,7 +142,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
             )
         }
 
-        return inflater.inflate(R.layout.main_fragment, container, false)
+        return binding.root
     }
 
     override fun onRequestPermissionsResult(
@@ -154,8 +163,13 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         when (requestCode) {
             RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code -> {
                 Toast.makeText(context, "Toastin'", Toast.LENGTH_SHORT).show()
-                viewModel.getConnections()
             }
         }
+    }
+
+    private fun subscribeUi(adapter: ConnectionAdapter) {
+        viewModel.connections.observe(this, Observer {
+            adapter.submitList(it)
+        })
     }
 }

@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="connection"
             type="com.till.data.Connection" />
@@ -23,10 +20,9 @@
         android:layout_marginLeft="@dimen/mtrl_card_spacing"
         android:layout_marginTop="@dimen/mtrl_card_spacing"
         android:layout_marginRight="@dimen/mtrl_card_spacing"
-        android:minHeight="200dp"
         android:onClick="@{clickListener}">
 
-        <androidx.appcompat.widget.LinearLayoutCompat
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
@@ -80,7 +76,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/connection_name"
                     tools:text="Last talked with James: 11/04/2019" />
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.appcompat.widget.LinearLayoutCompat>
+        </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
 
