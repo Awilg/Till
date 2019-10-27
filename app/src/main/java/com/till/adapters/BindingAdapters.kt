@@ -22,5 +22,8 @@ fun bindImageFromUrl(view: ImageView, imageUrl: String?) {
             .load(imageUrl)
             .dontAnimate()
             .into(view)
+    } else {
+        // make sure Glide doesn't load anything into this view until told otherwise
+        Glide.with(view.context).clear(view)
     }
 }

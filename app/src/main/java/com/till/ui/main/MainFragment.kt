@@ -57,9 +57,6 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                 Manifest.permission.CALL_PHONE
             )
         ) {
-            Toast.makeText(context, "Toastin'", Toast.LENGTH_SHORT).show()
-            //viewModel.getConnections()
-
             context?.let {
                 // Create an explicit intent for an Activity in your app
                 val intent = Intent(it, MainActivity::class.java).apply {

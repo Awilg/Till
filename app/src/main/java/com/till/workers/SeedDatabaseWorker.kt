@@ -62,7 +62,7 @@ class SeedDatabaseWorker(
         Timber.d("Merging the lists...")
 
         // Take the most recent from the two maps
-        numMap.mergeReduceInPlace(smsMap) { u, v -> if (u.toBigInteger() > v.toBigInteger()) u else v }
+        numMap.mergeReduceInPlace(smsMap) { u, v -> if (u.toLong() > v.toLong()) u else v }
 
         Timber.d("Getting contact names for ${numMap.size} numbers...")
         getContactsNames()

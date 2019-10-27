@@ -8,13 +8,13 @@
         android:title="@string/filter" />
 
     <item
-        android:id="@+id/home"
+        android:id="@+id/mainFragment"
         android:icon="@drawable/ic_home_black_24dp"
         android:state_checked="false"
         android:title="@string/home" />
 
     <item
-        android:id="@+id/more"
+        android:id="@+id/settingsFragment"
         android:icon="@drawable/ic_settings_black_24dp"
         android:state_checked="false"
         android:title="@string/settings" />
