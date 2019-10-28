@@ -5,9 +5,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.till.notif.NotificationHelper.createNotificationChannel
+import com.till.workers.PushNotificationWorker
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
@@ -26,6 +30,11 @@ class MainActivity : AppCompatActivity() {
             NotificationManagerCompat.IMPORTANCE_DEFAULT, false,
             getString(R.string.app_name), "App notification channel."
         )
+
+        // Start push notification worker
+        val request =
+            PeriodicWorkRequestBuilder<PushNotificationWorker>(1, TimeUnit.DAYS).build()
+        WorkManager.getInstance(applicationContext).enqueue(request)
 
         setUpNavigation()
     }
