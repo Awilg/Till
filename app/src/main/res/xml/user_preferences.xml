@@ -51,18 +51,34 @@
     <!--    </PreferenceCategory>-->
 
     <PreferenceCategory
+        app:initialExpandedChildrenCount="0"
+        app:key="notifications_category"
+        app:title="Notifications">
+
+        <Preference
+            app:key="expandable"
+            app:summary="This is expandable"
+            app:title="Notifications title" />
+
+        <Preference
+            app:key="expandable2"
+            app:summary="This is also expandable"
+            app:title="Some other title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         app:key="about_category"
         app:title="About">
 
         <Preference
             app:key="app_store_review"
-            app:summary="Rate us in the Google Play Store"
-            app:title="Like us?" />
+            app:summary="Rate it in the Google Play Store"
+            app:title="Enjoying Till?" />
 
         <Preference
             app:key="feedback"
             app:summary="Report technical issues or suggest new features"
             app:title="Send feedback" />
     </PreferenceCategory>
-
 </androidx.preference.PreferenceScreen>
