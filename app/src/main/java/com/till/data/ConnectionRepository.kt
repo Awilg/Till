@@ -4,6 +4,8 @@ class ConnectionRepository private constructor(private val connectionDao: Connec
 
 	fun getConnections() = connectionDao.getConnections()
 
+	fun getNeglectedConnection() = connectionDao.getNeglectedConnection()
+
 	fun getConnection(number: String) = connectionDao.getConnection(number)
 
 	fun addConnection(connection: Connection) = connectionDao.insert(connection)

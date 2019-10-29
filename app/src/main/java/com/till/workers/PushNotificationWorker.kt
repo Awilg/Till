@@ -3,6 +3,7 @@ package com.till.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.till.data.AppDatabase
 import kotlinx.coroutines.coroutineScope
 import timber.log.Timber
 
@@ -13,8 +14,10 @@ class PushNotificationWorker(
 
     override suspend fun doWork(): Result = coroutineScope {
         try {
-            // Do work
-            Timber.i("SCHEDULED PUSH SENT!")
+            val database = AppDatabase.getInstance(applicationContext)
+            val neglected = database.connectionDao().getNeglectedConnection()
+            Timber.i("NEGLECTED: ${neglected}")
+
             Result.success()
         } catch (ex: Exception) {
             Timber.e("Error seeding database: $ex")

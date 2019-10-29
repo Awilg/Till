@@ -14,6 +14,9 @@ interface ConnectionDao {
 	@Query("SELECT * FROM connections WHERE number = :number")
 	fun getConnection(number: String): LiveData<Connection>
 
+    @Query("SELECT * FROM connections ORDER BY lastContact LIMIT 1")
+    fun getNeglectedConnection(): Connection
+
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	suspend fun insertAll(connections: List<Connection>)
 
