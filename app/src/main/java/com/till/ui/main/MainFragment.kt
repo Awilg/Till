@@ -56,12 +56,22 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         ) {
             Timber.i("We gud on permssss")
             context?.let {
+                // TODO: create this only one and set the id in the viewmodel
                 val request =
                     PeriodicWorkRequestBuilder<PushNotificationWorker>(
-                        1,
-                        TimeUnit.DAYS
+                        15,
+                        TimeUnit.MINUTES
                     ).build()
                 WorkManager.getInstance(it).enqueue(request)
+//
+//                WorkManager.getInstance(it).getWorkInfoByIdLiveData(uploadWorkRequest.id)
+//                    .observe(lifecycleOwner, Observer { workInfo ->
+//                        if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
+//                            displayMessage("Work finished!")
+//                        }
+//                    })
+
+
             }
         } else {
             EasyPermissions.requestPermissions(
