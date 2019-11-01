@@ -1,5 +1,6 @@
 package com.till.workers
 
+import android.app.NotificationManager
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -21,7 +22,7 @@ class PushNotificationWorker(
 
             NotificationHelper.createNotificationChannel(
                 applicationContext,
-                4, // HIGH
+                NotificationManager.IMPORTANCE_MAX, // HIGH
                 false,
                 "Test Channel",
                 "This is a test channel description!"

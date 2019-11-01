@@ -9,8 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import com.till.adapters.ConnectionAdapter
 import com.till.databinding.MainFragmentBinding
 import com.till.util.InjectorUtils
@@ -25,10 +24,6 @@ enum class RequestCodes(val code: Int) {
 }
 
 class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
-
-    companion object {
-        fun newInstance() = MainFragment()
-    }
 
     private val viewModel: MainViewModel by viewModels {
         InjectorUtils.provideMainViewModelFactory(requireContext())
@@ -54,24 +49,38 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                 Manifest.permission.CALL_PHONE
             )
         ) {
-            Timber.i("We gud on permssss")
-            context?.let {
-                // TODO: create this only one and set the id in the viewmodel
-                val request =
-                    PeriodicWorkRequestBuilder<PushNotificationWorker>(
-                        15,
-                        TimeUnit.MINUTES
-                    ).build()
-                WorkManager.getInstance(it).enqueue(request)
-//
-//                WorkManager.getInstance(it).getWorkInfoByIdLiveData(uploadWorkRequest.id)
-//                    .observe(lifecycleOwner, Observer { workInfo ->
-//                        if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
-//                            displayMessage("Work finished!")
-//                        }
-//                    })
+            context?.let { it ->
+                WorkManager.getInstance(it)
+                    .getWorkInfosByTagLiveData("scheduled-push")
+                    .observe(this, Observer { list ->
+                        if (list == null) {
+                            // If we can find a job already running we create one
+                            val request = PeriodicWorkRequestBuilder<PushNotificationWorker>(
+                                15,
+                                TimeUnit.MINUTES
+                            )
+                                .addTag("scheduled-push")
+                                .setConstraints(
+                                    Constraints.Builder()
+                                        .setRequiresDeviceIdle(false)
+                                        .setRequiresCharging(false)
+                                        .setRequiresBatteryNotLow(true)
+                                        .build()
+                                )
+                                .setBackoffCriteria(
+                                    BackoffPolicy.LINEAR,
+                                    PeriodicWorkRequest.MIN_BACKOFF_MILLIS,
+                                    TimeUnit.MILLISECONDS
+                                )
+                                .build()
 
-
+                            WorkManager.getInstance(it).enqueue(request)
+                        } else {
+                            list.stream().forEach { worker ->
+                                Timber.i("Push worker ${worker.id} state: ${worker.state}")
+                            }
+                        }
+                    })
             }
         } else {
             EasyPermissions.requestPermissions(
