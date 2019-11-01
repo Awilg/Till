@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -33,12 +32,10 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         val binding = MainFragmentBinding.inflate(inflater)
 
         val adapter = ConnectionAdapter()
         binding.connectionList.adapter = adapter
-        subscribeUi(adapter)
 
         // Check permissions for SMS
         if (EasyPermissions.hasPermissions(
@@ -49,11 +46,12 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                 Manifest.permission.CALL_PHONE
             )
         ) {
+            subscribeUi(adapter)
             context?.let { it ->
                 WorkManager.getInstance(it)
                     .getWorkInfosByTagLiveData("scheduled-push")
                     .observe(this, Observer { list ->
-                        if (list == null) {
+                        if (list.isNullOrEmpty()) {
                             // If we can find a job already running we create one
                             val request = PeriodicWorkRequestBuilder<PushNotificationWorker>(
                                 15,
@@ -114,7 +112,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         when (requestCode) {
             RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code -> {
-                Toast.makeText(context, "Toastin'", Toast.LENGTH_SHORT).show()
+
             }
         }
     }
