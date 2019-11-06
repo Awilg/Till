@@ -7,10 +7,6 @@
         <variable
             name="connection"
             type="com.till.data.Connection" />
-
-        <variable
-            name="clickListener"
-            type="android.view.View.OnClickListener" />
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -20,8 +16,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginLeft="24dp"
         android:layout_marginTop="12dp"
-        android:layout_marginRight="24dp"
-        android:onClick="@{clickListener}">
+        android:layout_marginRight="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"

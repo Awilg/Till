@@ -5,11 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.work.*
 import com.till.adapters.ConnectionAdapter
+import com.till.adapters.ConnectionListener
 import com.till.databinding.MainFragmentBinding
 import com.till.util.InjectorUtils
 import com.till.workers.PushNotificationWorker
@@ -34,7 +36,16 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
     ): View {
         val binding = MainFragmentBinding.inflate(inflater)
 
-        val adapter = ConnectionAdapter()
+        val adapter = ConnectionAdapter(object : ConnectionListener {
+            override fun favoriteConnection() {
+                Toast.makeText(context, "Favorited!", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun navigateToConnectionFragment() {
+                Toast.makeText(context, "NAVIGATE TO CONNECTION!", Toast.LENGTH_SHORT).show()
+            }
+        })
+
         binding.connectionList.adapter = adapter
 
         // Check permissions for SMS
