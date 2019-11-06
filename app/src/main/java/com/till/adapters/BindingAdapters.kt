@@ -4,6 +4,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
+import com.till.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,7 +24,10 @@ fun bindImageFromUrl(view: ImageView, imageUrl: String?) {
             .dontAnimate()
             .into(view)
     } else {
-        // make sure Glide doesn't load anything into this view until told otherwise
-        Glide.with(view.context).clear(view)
+        // Default profile image
+        Glide.with(view.context)
+            .load(view.context.getDrawable(R.drawable.ic_person_black_primarydp))
+            .dontAnimate()
+            .into(view)
     }
 }
