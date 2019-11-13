@@ -65,8 +65,8 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                         if (list.isNullOrEmpty()) {
                             // If we can find a job already running we create one
                             val request = PeriodicWorkRequestBuilder<PushNotificationWorker>(
-                                1,
-                                TimeUnit.DAYS
+                                15,
+                                TimeUnit.MINUTES
                             )
                                 .addTag("scheduled-push")
                                 .setConstraints(
