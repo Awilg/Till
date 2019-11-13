@@ -15,7 +15,7 @@ interface ConnectionDao {
     fun getConnection(number: String): LiveData<Connection>
 
     @Query("SELECT * FROM connections ORDER BY lastContact")
-    fun getConnectionsByLastContact(): LiveData<List<Connection>>
+    fun getConnectionsByLastContact(): List<Connection>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(connections: List<Connection>)

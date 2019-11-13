@@ -23,7 +23,7 @@ class PushNotificationWorker(
             val neglectedContacts = database.connectionDao().getConnectionsByLastContact()
 
             // pick some contact
-            val neglected = neglectedContacts.value!!.stream().filter {
+            val neglected = neglectedContacts.stream().filter {
                 filterBetweenMonths(it)
             }.findAny().get()
 
