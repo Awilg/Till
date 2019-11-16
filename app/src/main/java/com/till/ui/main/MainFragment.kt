@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.work.*
+import com.till.R
 import com.till.adapters.ConnectionAdapter
 import com.till.adapters.ConnectionListener
 import com.till.databinding.MainFragmentBinding
@@ -58,15 +59,17 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
             )
         ) {
             subscribeUi(adapter)
+
             context?.let { it ->
+                // Check WorkManager if current job already is running
                 WorkManager.getInstance(it)
-                    .getWorkInfosByTagLiveData("scheduled-push")
+                    .getWorkInfosByTagLiveData(getString(R.string.scheduled_push_tag))
                     .observe(this, Observer { list ->
                         if (list.isNullOrEmpty()) {
-                            // If we can find a job already running we create one
+                            // If we can't find a job already running we create one
                             val request = PeriodicWorkRequestBuilder<PushNotificationWorker>(
-                                1,
-                                TimeUnit.DAYS
+                                15,
+                                TimeUnit.MINUTES
                             )
                                 .addTag("scheduled-push")
                                 .setConstraints(

@@ -2,6 +2,7 @@ package com.till.workers
 
 import android.app.NotificationManager
 import android.content.Context
+import androidx.preference.PreferenceManager
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.till.data.AppDatabase
@@ -11,6 +12,7 @@ import com.till.notif.NotificationHelper
 import kotlinx.coroutines.coroutineScope
 import timber.log.Timber
 import java.util.*
+import kotlin.streams.toList
 
 class PushNotificationWorker(
     context: Context,
@@ -19,33 +21,42 @@ class PushNotificationWorker(
 
     override suspend fun doWork(): Result = coroutineScope {
         try {
-            val database = AppDatabase.getInstance(applicationContext)
-            val neglectedContacts = database.connectionDao().getConnectionsByLastContact()
-
-            // pick some contact
-            val neglected = neglectedContacts.stream().filter {
-                filterBetweenMonths(it)
-            }.findAny().get()
-
-            NotificationHelper.createNotificationChannel(
-                applicationContext,
-                NotificationManager.IMPORTANCE_MAX, // HIGH
-                false,
-                "Test Channel",
-                "This is a test channel description!"
+            // Check if the preference is enabled. This is done here as to not clutter the
+            // workmanager with a bunch of cancelled jobs.
+            val sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(applicationContext)
+            val dailyPushPref = sharedPreferences.getBoolean(
+                "enable_daily_push_notifications",
+                true
             )
+            if (dailyPushPref) {
+                val database = AppDatabase.getInstance(applicationContext)
+                val neglectedContacts = database.connectionDao().getConnectionsByLastContact()
 
-            val builder = NotificationHelper.createSampleDataNotification(
-                applicationContext,
-                neglected.name,
-                "15m: You last spoke with them on ${neglected.lastContact.fromTimestampToFormatMonthDayYear()}! Want to reach out and catch up?",
-                neglected.number,
-                "",
-                autoCancel = true
-            )
+                // pick some contact
+                val neglected = neglectedContacts.stream().filter {
+                    filterBetweenMonths(it)
+                }.toList().random()
 
-            NotificationHelper.showNotification(applicationContext, builder)
+                NotificationHelper.createNotificationChannel(
+                    applicationContext,
+                    NotificationManager.IMPORTANCE_MAX, // HIGH
+                    false,
+                    "Test Channel",
+                    "This is a test channel description!"
+                )
 
+                val builder = NotificationHelper.createSampleDataNotification(
+                    applicationContext,
+                    neglected.name,
+                    "15m: You last spoke with them on ${neglected.lastContact.fromTimestampToFormatMonthDayYear()}! Want to reach out and catch up?",
+                    neglected.number,
+                    "",
+                    autoCancel = true
+                )
+
+                NotificationHelper.showNotification(applicationContext, builder)
+            }
             Result.success()
         } catch (ex: Exception) {
             Timber.e("Error seeding database: $ex")

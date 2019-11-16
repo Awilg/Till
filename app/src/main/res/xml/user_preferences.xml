@@ -4,8 +4,9 @@
         app:key="notifications_category"
         app:title="Notifications">
         <SwitchPreference
-            app:key="enable_daily_push_notifications"
+            app:defaultValue="true"
             app:summary="Sends one neglected contact at random for you reach out to"
+            app:key="@string/pref_daily_push_notification"
             app:title="Daily Reminder" />
     </PreferenceCategory>
 
