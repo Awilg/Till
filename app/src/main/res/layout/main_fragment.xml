@@ -10,20 +10,13 @@
             type="com.till.ui.main.MainViewModel" />
     </data>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_refresh_layout"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/connection_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:context=".ui.main.MainFragment">
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:spanCount="1"
+        tools:listitem="@layout/connection_card" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/connection_list"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clipToPadding="false"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:spanCount="1"
-            tools:listitem="@layout/connection_card" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </layout>

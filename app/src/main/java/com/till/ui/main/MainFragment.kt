@@ -92,6 +92,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                                 Timber.i("Push worker ${worker.id} state: ${worker.state}")
                             }
                         }
+
                     })
             }
         } else {
