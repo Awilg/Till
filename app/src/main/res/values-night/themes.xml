@@ -19,7 +19,10 @@
     <!--Top level DayNight theme to be used in AndroidManifest.xml-->
     <style name="TillTheme.DayNight" parent="Base.TillTheme">
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+
         <item name="android:windowLightNavigationBar" tools:ignore="NewApi">false</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
 </resources>

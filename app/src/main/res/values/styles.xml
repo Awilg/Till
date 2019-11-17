@@ -1,25 +1,3 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-
-    <!--Components-->
-
-    <!--Bottom Sheets-->
-    <style name="ThemeOverlay.TillTheme.BottomSheetDialog" parent="ThemeOverlay.MaterialComponents.Dialog">
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">?colorSurface</item>
-        <item name="android:navigationBarDividerColor" tools:ignore="NewApi">
-            @android:color/transparent
-        </item>
-    </style>
-
-    <style name="Widget.TillTheme.BottomSheet.Modal" parent="Widget.MaterialComponents.BottomSheet.Modal">
-        <item name="shapeAppearanceOverlay">?shapeAppearanceLargeComponent</item>
-    </style>
-
-    <!--Navigation Drawer-->
-    <style name="Widget.TillTheme.NavigationView" parent="Widget.MaterialComponents.NavigationView">
-        <item name="itemTextAppearance">?textAppearanceBody2</item>
-    </style>
+<resources>
 
 </resources>
