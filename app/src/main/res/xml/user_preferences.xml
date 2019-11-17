@@ -5,7 +5,6 @@
         app:key="general_category"
         app:title="General">
         <SwitchPreference
-            app:defaultValue="false"
             app:key="@string/pref_dark_mode"
             app:title="@string/dark_mode" />
     </PreferenceCategory>
