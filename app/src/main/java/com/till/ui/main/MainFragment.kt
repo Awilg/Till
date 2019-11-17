@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -44,6 +45,22 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
             override fun navigateToConnectionFragment() {
                 Toast.makeText(context, "NAVIGATE TO CONNECTION!", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        binding.connectionSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let {
+                    adapter.filter(it)
+                }
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                newText?.let {
+                    adapter.filter(it)
+                }
+                return true
             }
         })
 
@@ -134,7 +151,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
     private fun subscribeUi(adapter: ConnectionAdapter) {
         viewModel.connections.observe(this, Observer {
-            adapter.submitList(it)
+            adapter.submitList(it.toMutableList())
         })
     }
 }

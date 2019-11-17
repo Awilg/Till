@@ -7,8 +7,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.till.data.Connection
 import com.till.databinding.ConnectionCardBinding
+import java.util.*
 
-class ConnectionAdapter(private val connectionListener: ConnectionListener) :
+class ConnectionAdapter(
+    private val connectionListener: ConnectionListener,
+    // maintain a list of all connections that we can filter on
+    private var _connectionList: MutableList<Connection>? = null
+) :
     ListAdapter<Connection, RecyclerView.ViewHolder>(ConnectionDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -35,6 +40,32 @@ class ConnectionAdapter(private val connectionListener: ConnectionListener) :
             binding.profileImage.setOnClickListener { connectionListener.favoriteConnection() }
             binding.executePendingBindings()
         }
+    }
+
+    override fun submitList(list: MutableList<Connection>?) {
+        _connectionList = list
+        super.submitList(list)
+    }
+
+    fun filter(text: String) {
+        val filtered = mutableListOf<Connection>()
+        if (text.isEmpty()) {
+            super.submitList(_connectionList)
+        } else {
+            val lowerText = text.toLowerCase(Locale.getDefault())
+            _connectionList?.let { it ->
+                it.stream().forEach { conn ->
+                    if (
+                        conn.name.toLowerCase(Locale.getDefault()).contains(lowerText) ||
+                        conn.number.toLowerCase(Locale.getDefault()).contains(lowerText)
+                    ) {
+                        filtered.add(conn)
+                    }
+                }
+            }
+            super.submitList(filtered)
+        }
+        notifyDataSetChanged()
     }
 
 }
