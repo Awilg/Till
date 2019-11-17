@@ -53,7 +53,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                 query?.let {
                     adapter.filter(it)
                 }
-                return true
+                return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
