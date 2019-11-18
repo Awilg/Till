@@ -7,8 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.till.databinding.MainFragmentBinding
+import com.till.databinding.PermissionsFragmentBinding
 import com.till.ui.main.RequestCodes
+import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
 
@@ -39,7 +40,7 @@ class PermissionsFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 				).build()
 			)
 		}
-		val binding = MainFragmentBinding.inflate(inflater)
+		val binding = PermissionsFragmentBinding.inflate(inflater)
 		return binding.root
 	}
 
@@ -54,12 +55,20 @@ class PermissionsFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 	}
 
 	override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
-		TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+		// (Optional) Check whether the user denied any permissions and checked "NEVER ASK AGAIN."
+		// This will display a dialog directing them to enable the permission in app settings.
+		if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+			AppSettingsDialog.Builder(this).build().show()
+		}
 	}
 
 	override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
 		when (requestCode) {
 			RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code -> {
+				navigateToMain()
+			}
+			AppSettingsDialog.DEFAULT_SETTINGS_REQ_CODE -> {
 				navigateToMain()
 			}
 		}
