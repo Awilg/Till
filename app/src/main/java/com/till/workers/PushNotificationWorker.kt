@@ -49,7 +49,7 @@ class PushNotificationWorker(
                 val builder = NotificationHelper.createSampleDataNotification(
                     applicationContext,
                     neglected.name,
-                    "15m: You last spoke with them on ${neglected.lastContact.fromTimestampToFormatMonthDayYear()}! Want to reach out and catch up?",
+                    "You last spoke with them on ${neglected.lastContact.fromTimestampToFormatMonthDayYear()}! Want to reach out and catch up?",
                     neglected.number,
                     "",
                     autoCancel = true

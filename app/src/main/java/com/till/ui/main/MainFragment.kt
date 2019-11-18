@@ -1,6 +1,5 @@
 package com.till.ui.main
 
-import android.Manifest
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +9,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.work.*
 import com.till.R
 import com.till.adapters.ConnectionAdapter
@@ -17,8 +17,6 @@ import com.till.adapters.ConnectionListener
 import com.till.databinding.MainFragmentBinding
 import com.till.util.InjectorUtils
 import com.till.workers.PushNotificationWorker
-import pub.devrel.easypermissions.EasyPermissions
-import pub.devrel.easypermissions.PermissionRequest
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -26,7 +24,7 @@ enum class RequestCodes(val code: Int) {
     PERMISSIONS_RC_SMS_CONTACT(100)
 }
 
-class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
+class MainFragment : Fragment() {
 
     private val viewModel: MainViewModel by viewModels {
         InjectorUtils.provideMainViewModelFactory(requireContext())
@@ -48,6 +46,10 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
             }
         })
 
+        binding.settingsButton.setOnClickListener {
+            findNavController().navigate(MainFragmentDirections.actionMainFragmentToSettingsFragment())
+        }
+
         binding.connectionSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
@@ -66,90 +68,48 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
         binding.connectionList.adapter = adapter
 
-        // Check permissions for SMS
-        if (EasyPermissions.hasPermissions(
-                context!!,
-                Manifest.permission.READ_SMS,
-                Manifest.permission.READ_CONTACTS,
-                Manifest.permission.READ_CALL_LOG,
-                Manifest.permission.CALL_PHONE
-            )
-        ) {
-            subscribeUi(adapter)
 
-            context?.let { it ->
-                // Check WorkManager if current job already is running
-                WorkManager.getInstance(it)
-                    .getWorkInfosByTagLiveData(getString(R.string.scheduled_push_tag))
-                    .observe(this, Observer { list ->
-                        if (list.isNullOrEmpty()) {
-                            // If we can't find a job already running we create one
-                            val request = PeriodicWorkRequestBuilder<PushNotificationWorker>(
-                                1,
-                                TimeUnit.DAYS
+        subscribeUi(adapter)
+
+        context?.let { it ->
+            // Check WorkManager if current job already is running
+            WorkManager.getInstance(it)
+                .getWorkInfosByTagLiveData(getString(R.string.scheduled_push_tag))
+                .observe(this, Observer { list ->
+                    if (list.isNullOrEmpty()) {
+                        // If we can't find a job already running we create one
+                        val request = PeriodicWorkRequestBuilder<PushNotificationWorker>(
+                            15,
+                            TimeUnit.MINUTES
+                        )
+                            .addTag("scheduled-push")
+                            .setConstraints(
+                                Constraints.Builder()
+                                    .setRequiresDeviceIdle(false)
+                                    .setRequiresCharging(false)
+                                    .setRequiresBatteryNotLow(true)
+                                    .build()
                             )
-                                .addTag("scheduled-push")
-                                .setConstraints(
-                                    Constraints.Builder()
-                                        .setRequiresDeviceIdle(false)
-                                        .setRequiresCharging(false)
-                                        .setRequiresBatteryNotLow(true)
-                                        .build()
-                                )
-                                .setBackoffCriteria(
-                                    BackoffPolicy.LINEAR,
-                                    PeriodicWorkRequest.MIN_BACKOFF_MILLIS,
-                                    TimeUnit.MILLISECONDS
-                                )
-                                .build()
+                            .setBackoffCriteria(
+                                BackoffPolicy.LINEAR,
+                                PeriodicWorkRequest.MIN_BACKOFF_MILLIS,
+                                TimeUnit.MILLISECONDS
+                            )
+                            .build()
 
-                            WorkManager.getInstance(it).enqueue(request)
-                        } else {
-                            list.stream().forEach { worker ->
-                                Timber.i("Push worker ${worker.id} state: ${worker.state}")
-                            }
+                        WorkManager.getInstance(it).enqueue(request)
+                    } else {
+                        list.stream().forEach { worker ->
+                            Timber.i("Push worker ${worker.id} state: ${worker.state}")
                         }
+                    }
 
-                    })
-            }
-        } else {
-            EasyPermissions.requestPermissions(
-                PermissionRequest.Builder(
-                    this, RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code,
-                    Manifest.permission.READ_SMS,
-                    Manifest.permission.READ_CONTACTS,
-                    Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.CALL_PHONE
-                ).build()
-            )
+                })
         }
-
         return binding.root
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
-    }
-
-    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
-        when (requestCode) {
-            RequestCodes.PERMISSIONS_RC_SMS_CONTACT.code -> {
-
-            }
-        }
-    }
-
-    private fun subscribeUi(adapter: ConnectionAdapter) {
+    fun subscribeUi(adapter: ConnectionAdapter) {
         viewModel.connections.observe(this, Observer {
             adapter.submitList(it.toMutableList())
         })

@@ -10,7 +10,7 @@
             type="com.till.ui.main.MainViewModel" />
     </data>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:fitsSystemWindows="true"
         android:layout_height="match_parent"
@@ -18,24 +18,47 @@
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/connection_search"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
+            app:iconifiedByDefault="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        </androidx.appcompat.widget.SearchView>
+
+        <ImageView
+            android:id="@+id/settings_button"
+            android:layout_width="48dp"
+            android:layout_height="49dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="4dp"
-            app:iconifiedByDefault="false" />
+            android:contentDescription="@string/settings_page"
+            android:scaleType="center"
+            android:scaleX="1.75"
+            android:scaleY="1.75"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/connection_search"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_settings_24dp"
+            tools:src="@drawable/ic_settings_24dp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/connection_list"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:clipToPadding="false"
             android:fadingEdgeLength="16dp"
             android:requiresFadingEdge="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/connection_search"
             app:spanCount="1"
             tools:listitem="@layout/connection_card" />
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
