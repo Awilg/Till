@@ -20,9 +20,6 @@ import com.till.workers.PushNotificationWorker
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-enum class RequestCodes(val code: Int) {
-    PERMISSIONS_RC_SMS_CONTACT(100)
-}
 
 class MainFragment : Fragment() {
 
