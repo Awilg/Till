@@ -1,5 +1,6 @@
 package com.till.ui.main
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,13 +12,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.work.*
-import com.till.R
 import com.till.adapters.ConnectionAdapter
 import com.till.adapters.ConnectionListener
 import com.till.databinding.MainFragmentBinding
 import com.till.util.InjectorUtils
 import com.till.workers.PushNotificationWorker
-import timber.log.Timber
+import com.till.workers.SeedDatabaseWorker
 import java.util.concurrent.TimeUnit
 
 
@@ -65,48 +65,62 @@ class MainFragment : Fragment() {
 
         binding.connectionList.adapter = adapter
 
-
         subscribeUi(adapter)
 
         context?.let { it ->
-            // Check WorkManager if current job already is running
+            // Add an observer to trigger the push worker once the seed worker is finished
             WorkManager.getInstance(it)
-                .getWorkInfosByTagLiveData(getString(R.string.scheduled_push_tag))
+                .getWorkInfosByTagLiveData("seed-db")
                 .observe(this, Observer { list ->
                     if (list.isNullOrEmpty()) {
-                        // If we can't find a job already running we create one
-                        val request = PeriodicWorkRequestBuilder<PushNotificationWorker>(
-                            15,
-                            TimeUnit.MINUTES
-                        )
-                            .addTag("scheduled-push")
-                            .setConstraints(
-                                Constraints.Builder()
-                                    .setRequiresDeviceIdle(false)
-                                    .setRequiresCharging(false)
-                                    .setRequiresBatteryNotLow(true)
-                                    .build()
-                            )
-                            .setBackoffCriteria(
-                                BackoffPolicy.LINEAR,
-                                PeriodicWorkRequest.MIN_BACKOFF_MILLIS,
-                                TimeUnit.MILLISECONDS
-                            )
-                            .build()
-
-                        WorkManager.getInstance(it).enqueue(request)
-                    } else {
-                        list.stream().forEach { worker ->
-                            Timber.i("Push worker ${worker.id} state: ${worker.state}")
-                        }
+                        // Initial DB seed
+                        updateDb(it)
                     }
-
+                    if (list.stream().anyMatch { work -> work.state.isFinished }) {
+                        // Once completed we can start the push worker
+                        initPushWorker(it)
+                    }
                 })
+
         }
         return binding.root
     }
 
-    fun subscribeUi(adapter: ConnectionAdapter) {
+    private fun updateDb(context: Context) {
+        val request = OneTimeWorkRequestBuilder<SeedDatabaseWorker>()
+            .addTag("seed-db").build()
+
+        WorkManager.getInstance(context).enqueue(request)
+    }
+
+    private fun initPushWorker(context: Context) {
+        val request = PeriodicWorkRequestBuilder<PushNotificationWorker>(
+            1,
+            TimeUnit.DAYS
+        )
+            .addTag("scheduled-push")
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiresDeviceIdle(false)
+                    .setRequiresCharging(false)
+                    .setRequiresBatteryNotLow(true)
+                    .build()
+            )
+            .setBackoffCriteria(
+                BackoffPolicy.LINEAR,
+                PeriodicWorkRequest.MIN_BACKOFF_MILLIS,
+                TimeUnit.MILLISECONDS
+            )
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "periodic-push-worker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
+    }
+
+    private fun subscribeUi(adapter: ConnectionAdapter) {
         viewModel.connections.observe(this, Observer {
             adapter.submitList(it.toMutableList())
         })
