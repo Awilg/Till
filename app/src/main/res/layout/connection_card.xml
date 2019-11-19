@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="connection"
             type="com.till.data.Connection" />
@@ -17,6 +18,7 @@
         android:layout_marginLeft="24dp"
         android:layout_marginTop="12dp"
         android:layout_marginRight="24dp"
+        app:rippleColor="@android:color/transparent"
         app:cardCornerRadius="5dp">
 
         <LinearLayout
@@ -60,13 +62,41 @@
                     android:id="@+id/connection_last_contact"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="16dp"
                     android:textSize="13sp"
                     app:formatTimestamp="@{connection.lastContact}"
                     app:layout_constraintStart_toStartOf="@+id/connection_name"
                     app:layout_constraintTop_toBottomOf="@+id/connection_name"
                     tools:text="Last talked with James: 11/04/2019" />
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/expand_action_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/profile_image">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/action_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/text"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/action_call"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/call"
+                    app:layout_constraintStart_toEndOf="@+id/action_text"
+                    app:layout_constraintTop_toTopOf="@+id/action_text" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>

@@ -1,17 +1,20 @@
 package com.till.adapters
 
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.till.R
 import com.till.data.Connection
 import com.till.databinding.ConnectionCardBinding
 import java.util.*
 
 class ConnectionAdapter(
-    private val connectionListener: ConnectionListener,
-    // maintain a list of all connections that we can filter on
     private var _connectionList: MutableList<Connection>? = null
 ) :
     ListAdapter<Connection, RecyclerView.ViewHolder>(ConnectionDiffCallback()) {
@@ -20,7 +23,7 @@ class ConnectionAdapter(
         return ConnectionViewHolder(
             ConnectionCardBinding.inflate(
                 LayoutInflater.from(parent.context), parent, false
-            ), connectionListener
+            )
         )
     }
 
@@ -30,14 +33,33 @@ class ConnectionAdapter(
     }
 
     class ConnectionViewHolder(
-        private val binding: ConnectionCardBinding,
-        private val connectionListener: ConnectionListener
+        private val binding: ConnectionCardBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Connection) {
             binding.connection = item
+            binding.expandActionButtons.visibility = View.GONE
+            binding.root.setOnClickListener {
+                if (binding.expandActionButtons.visibility == View.VISIBLE) {
+                    binding.expandActionButtons.visibility = View.GONE
+                } else {
+                    binding.expandActionButtons.visibility = View.VISIBLE
+                }
+            }
+            binding.actionText.setOnClickListener {
+                val smsIntent = Intent(Intent.ACTION_SENDTO).apply {
+                    data =
+                        Uri.parse("smsto:${item.number}")  // This ensures only SMS apps respond
+                    putExtra("sms_body", binding.root.context.getString(R.string.sms_template_omg))
+                }
+                startActivity(binding.root.context, smsIntent, null)
+            }
+            binding.actionCall.setOnClickListener {
 
-            binding.root.setOnClickListener { connectionListener.navigateToConnectionFragment() }
-            binding.profileImage.setOnClickListener { connectionListener.favoriteConnection() }
+                val callIntent = Intent(Intent.ACTION_DIAL).apply {
+                    data = Uri.parse("tel:${item.number}")
+                }
+                startActivity(binding.root.context, callIntent, null)
+            }
             binding.executePendingBindings()
         }
     }

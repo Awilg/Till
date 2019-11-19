@@ -67,9 +67,7 @@ object NotificationHelper {
         }
 
         val callIntent = Intent(Intent.ACTION_DIAL).apply {
-            data =
-                Uri.parse("tel:$contactAddress")  // This ensures only SMS apps respond
-            putExtra("sms_body", context.getString(R.string.sms_template_omg))
+            data = Uri.parse("tel:$contactAddress")
         }
 
         // Verify it resolves
