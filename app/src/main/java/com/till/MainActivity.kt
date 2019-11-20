@@ -6,14 +6,14 @@ import androidx.core.app.NotificationManagerCompat
 import com.till.notif.NotificationHelper.createNotificationChannel
 import timber.log.Timber
 
-
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
-        //TODO: remove before release
-        Timber.plant(Timber.DebugTree())
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
 
         // Create Notification Channel
         createNotificationChannel(
