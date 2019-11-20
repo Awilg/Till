@@ -24,13 +24,9 @@
         app:title="About">
 
         <Preference
-            app:key="app_store_review"
+            app:key="pref_rate_app"
             app:summary="Rate it in the Google Play Store"
             app:title="Enjoying Till?" />
 
-        <Preference
-            app:key="feedback"
-            app:summary="Report technical issues or suggest new features"
-            app:title="Send feedback" />
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>
