@@ -42,7 +42,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         rateAppStore?.setOnPreferenceClickListener {
 
-
+            // https://stackoverflow.com/questions/10816757/rate-this-app-link-in-google-play-store-app-on-the-phone
             val uri = Uri.parse("market://details?id=" + context?.packageName)
             val goToMarket = Intent(Intent.ACTION_VIEW, uri)
             // To count with Play market backstack, After pressing back button,
