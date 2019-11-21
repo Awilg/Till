@@ -23,8 +23,8 @@ This app is a single activity app that showcases a bunch of functionality from A
 
 ## Screenshots
 
-![](https://i.imgur.com/4kZfYCT.png)
+![](https://i.imgur.com/lkUepBU.png)
 
-![](https://i.imgur.com/PR839Mu.png)
+![](https://i.imgur.com/0y1E6t4.png)
 
-![](https://i.imgur.com/ALtQ6iG.png)
+![](https://i.imgur.com/pDlczei.png)
